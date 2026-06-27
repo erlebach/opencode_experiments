@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arithmetic Calculator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a; color: #e2e8f0;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .container { width: 100%; max-width: 480px; padding: 2rem; text-align: center; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 2rem; color: #f8fafc; }
+    #expression {
+      width: 100%; padding: 1rem 1.25rem; font-size: 1.5rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: #1e293b; border: 2px solid #334155;
+      border-radius: 12px; color: #f8fafc; outline: none;
+      transition: border-color 0.2s;
+    }
+    #expression:focus { border-color: #6366f1; }
+    #expression::placeholder { color: #64748b; }
+    #result {
+      margin-top: 1.5rem; padding: 1.5rem;
+      background: #1e293b; border-radius: 12px;
+      font-size: 2.5rem; font-weight: 700;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #6366f1; min-height: 80px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #result.error { color: #ef4444; font-size: 1.25rem; }
+    #result.loading { color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Arithmetic Calculator</h1>
+    <input
+      type="text" id="expression" placeholder="e.g. 42 * 7 + 3"
+      autocomplete="off" spellcheck="false"
+    />
+    <div id="result">—</div>
+  </div>
+
+  <script>
+    const input = document.getElementById('expression');
+    const result = document.getElementById('result');
+    let timer;
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      const expr = input.value.trim();
+      if (!expr) { result.textContent = '—'; result.className = ''; return; }
+      result.textContent = '…'; result.className = 'loading';
+      timer = setTimeout(() => {
+        fetch('/eval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expression: expr }),
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) { result.textContent = data.error; result.className = 'error'; }
+          else { result.textContent = data.result; result.className = ''; }
+        })
+        .catch(() => { result.textContent = 'Server unreachable'; result.className = 'error'; });
+      }, 300);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { clearTimeout(timer); input.dispatchEvent(new Event('input')); }
+    });
+  </script>
+</body>
+</html>

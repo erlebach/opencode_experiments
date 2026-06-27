@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arithmetic Calculator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: #f8fafc;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    #expression {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      font-size: 1.5rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      color: #f8fafc;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #expression:focus {
+      border-color: #6366f1;
+    }
+
+    #expression::placeholder {
+      color: #64748b;
+    }
+
+    .result {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #result {
+      font-size: 2.5rem;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #6366f1;
+      transition: color 0.2s;
+    }
+
+    #result.error {
+      color: #ef4444;
+      font-size: 1.25rem;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    button {
+      padding: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .btn-num {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    .btn-num:hover {
+      background: #334155;
+    }
+
+    .btn-op {
+      background: #312e81;
+      color: #a5b4fc;
+    }
+
+    .btn-op:hover {
+      background: #3730a3;
+    }
+
+    .btn-clear {
+      background: #7f1d1d;
+      color: #fca5a5;
+      grid-column: span 2;
+    }
+
+    .btn-clear:hover {
+      background: #991b1b;
+    }
+
+    .btn-equal {
+      background: #6366f1;
+      color: #fff;
+      grid-column: span 2;
+    }
+
+    .btn-equal:hover {
+      background: #4f46e5;
+    }
+
+    .history {
+      margin-top: 1.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .history-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: #1e293b;
+      border-radius: 6px;
+      margin-bottom: 0.25rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .history-item:hover {
+      background: #334155;
+    }
+
+    .history-expr {
+      color: #94a3b8;
+    }
+
+    .history-result {
+      color: #6366f1;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Arithmetic Calculator</h1>
+
+    <div class="input-group">
+      <input
+        type="text"
+        id="expression"
+        placeholder="e.g. 42 * 7 + 3"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <div class="result">
+      <div class="result-label">Result</div>
+      <div id="result">—</div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-clear" onclick="clearAll()">AC</button>
+      <button class="btn-op" onclick="append('(')">(</button>
+      <button class="btn-op" onclick="append(')')">)</button>
+      <button class="btn-num" onclick="append('7')">7</button>
+      <button class="btn-num" onclick="append('8')">8</button>
+      <button class="btn-num" onclick="append('9')">9</button>
+      <button class="btn-op" onclick="append('/')">÷</button>
+      <button class="btn-num" onclick="append('4')">4</button>
+      <button class="btn-num" onclick="append('5')">5</button>
+      <button class="btn-num" onclick="append('6')">6</button>
+      <button class="btn-op" onclick="append('*')">×</button>
+      <button class="btn-num" onclick="append('1')">1</button>
+      <button class="btn-num" onclick="append('2')">2</button>
+      <button class="btn-num" onclick="append('3')">3</button>
+      <button class="btn-op" onclick="append('-')">−</button>
+      <button class="btn-num" onclick="append('0')">0</button>
+      <button class="btn-num" onclick="append('.')">.</button>
+      <button class="btn-equal" onclick="evaluate()">=</button>
+      <button class="btn-op" onclick="append('+')">+</button>
+    </div>
+
+    <div class="history" id="history" style="display: none;">
+      <div class="history-title">History</div>
+    </div>
+  </div>
+
+  <script>
+    const exprInput = document.getElementById('expression');
+    const resultEl = document.getElementById('result');
+    const historyEl = document.getElementById('history');
+    let history = [];
+
+    function append(ch) {
+      exprInput.value += ch;
+      exprInput.focus();
+      evaluate();
+    }
+
+    function clearAll() {
+      exprInput.value = '';
+      resultEl.textContent = '—';
+      resultEl.classList.remove('error');
+    }
+
+    function evaluate() {
+      const expr = exprInput.value.trim();
+      if (!expr) {
+        resultEl.textContent = '—';
+        resultEl.classList.remove('error');
+        return;
+      }
+
+      try {
+        // Only allow safe characters: digits, operators, parens, dots, spaces
+        if (/[^0-9+\-*/().\s]/.test(expr)) {
+          throw new Error('Invalid characters');
+        }
+
+        const fn = new Function(`"use strict"; return (${expr})`);
+        const result = fn();
+
+        if (typeof result !== 'number' || !isFinite(result)) {
+          throw new Error(result === Infinity ? 'Division by zero' : 'Invalid result');
+        }
+
+        // Format: remove trailing zeros after decimal
+        const formatted = Number.isInteger(result) ? result.toString() : result.toFixed(10).replace(/0+$/, '').replace(/\.$/, '');
+
+        resultEl.textContent = formatted;
+        resultEl.classList.remove('error');
+
+        // Add to history
+        addToHistory(expr, formatted);
+      } catch (e) {
+        resultEl.textContent = e.message || 'Error';
+        resultEl.classList.add('error');
+      }
+    }
+
+    function addToHistory(expr, result) {
+      // Avoid duplicate consecutive entries
+      if (history.length > 0 && history[0].expr === expr) return;
+
+      history.unshift({ expr, result });
+      if (history.length > 20) history.pop();
+
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (history.length === 0) {
+        historyEl.style.display = 'none';
+        return;
+      }
+
+      historyEl.style.display = 'block';
+      historyEl.innerHTML = '<div class="history-title">History</div>';
+
+      history.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `<span class="history-expr">${escapeHtml(item.expr)}</span><span class="history-result">= ${escapeHtml(item.result)}</span>`;
+        div.addEventListener('click', () => {
+          exprInput.value = item.expr;
+          evaluate();
+        });
+        historyEl.appendChild(div);
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Keyboard support
+    exprInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        evaluate();
+      }
+    });
+
+    // Live evaluation on input
+    exprInput.addEventListener('input', evaluate);
+  </script>
+</body>
+</html>
